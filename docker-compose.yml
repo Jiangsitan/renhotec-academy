@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: renhotec-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-renhotec123}
+      MYSQL_DATABASE: renhotec_academy
+      MYSQL_USER: ${DB_USERNAME:-renhotec}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-renhotec123}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # Redis 缓存
+  redis:
+    image: redis:8-alpine
+    container_name: renhotec-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-renhotec123}
+    networks:
+      - app-network
+
+  # Laravel API 服务
+  api:
+    image: academy-api:v1
+    container_name: renhotec-api
+    restart: unless-stopped
+    ports:
+      - "9000:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=${APP_URL:-https://learn.renhotec.cn}
+      - FRONTEND_URL=${FRONTEND_URL:-https://learn.renhotec.cn}
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=renhotec_academy
+      - DB_USERNAME=${DB_USERNAME:-renhotec}
+      - DB_PASSWORD=${DB_PASSWORD:-renhotec123}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SANCTUM_STATEFUL_DOMAINS=${SANCTUM_STATEFUL_DOMAINS:-learn.renhotec.cn}
+      - OSS_ACCESS_KEY_ID=${OSS_ACCESS_KEY_ID}
+      - OSS_ACCESS_KEY_SECRET=${OSS_ACCESS_KEY_SECRET}
+      - OSS_BUCKET=${OSS_BUCKET}
+      - OSS_ENDPOINT=${OSS_ENDPOINT}
+      - OSS_CDN_DOMAIN=${OSS_CDN_DOMAIN}
+      - OSS_SSL=${OSS_SSL}
+      - OSS_IS_CNAME=${OSS_IS_CNAME}
+      - OSS_DEBUG=${OSS_DEBUG}
+      - OSS_IS_PRIVATE=${OSS_IS_PRIVATE}
+      - OSS_SIGNED_URL_EXPIRES=${OSS_SIGNED_URL_EXPIRES}
+      - OSS_PREFIX=${OSS_PREFIX}
+      - FILESYSTEM_DISK=oss
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - storage_data:/app/storage
+      - ./academy_api/public/storage:/app/public/storage
+    networks:
+      - app-network
+
+  # Nuxt 前端应用
+  web:
+    image: academy-nuxt:v1
+    container_name: renhotec-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_PUBLIC_API_BASE=/api
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    external: true
+  redis_data:
+    external: true
+  storage_data:
+    external: true
