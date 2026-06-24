@@ -224,18 +224,6 @@ docker compose up -d
 
 ---
 
-## 默认账户
-
-| 角色 | 工号 | 默认密码 |
-|------|------|----------|
-| 管理员 | ADMIN001 | Admin@123456 |
-| 导师 | MEN001 | Admin@123456 |
-| 学员 | STU001 | Admin@123456 |
-
-> ⚠️ 首次登录后请立即修改默认密码！
-
----
-
 ## API 文档
 
 API 文档已生成为 OpenAPI 3.0 格式，文件位置：`academy_api/openapi.json`
