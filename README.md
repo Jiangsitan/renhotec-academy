@@ -304,6 +304,16 @@ docker system prune -a
 
 ---
 
+## 相关链接
+
+| 仓库 | 地址 | 说明 |
+|------|------|------|
+| 后端 API | https://github.com/Jiangsitan/renhotec-academy-api | Laravel 13 后端接口 |
+| 前端应用 | https://github.com/Jiangsitan/renhotec-academy-nuxt | Nuxt 3 前端应用 |
+| 主仓库 | https://github.com/Jiangsitan/renhotec-academy | 项目文档和部署配置 |
+
+---
+
 ## 联系方式
 
 | 项目 | 信息 |
